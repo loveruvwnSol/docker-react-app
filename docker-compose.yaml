@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: ./react-app/Dockerfile
+    volumes:
+      - type: bind
+        source: ./react-app
+        target: /usr/src/app
+    command: sh -c "yarn start"
+    ports:
+      - 3000:3000
+    stdin_open: true
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_USER: ${ROOTUSER}
+      MYSQL_ROOT_PASSWORD: ${ROOTPASS}
+      MYSQL_DATABASE: ${DATABASE}
+      MYSQL_USER: ${USERNAME}
+      MYSQL_PASSWORD: ${USERPASS}
+      TZ: "Asia/Tokyo"
+    volumes:
+      - ./my.cnf:/etc/mysql/conf.d/my.cnf
+    env_file:
+      - .env
+    container_name: db
+    ports:
+      - 3306:3306
+
+  go:
+    build: ./go
+    volumes:
+      - ./go:/go
+    container_name: go
+    tty: true
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
