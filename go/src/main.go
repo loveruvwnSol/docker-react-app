@@ -1,10 +1,12 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type post struct {
@@ -16,6 +18,7 @@ type post struct {
 var posts = []post{{ID: 1, Title: "title1", Text: "hello"}}
 
 func main() {
+	connect()
 	router := gin.Default()
 	router.GET("/post", getPost)
 	router.POST("/post", postText)
@@ -47,4 +50,26 @@ func postText(c *gin.Context) {
 
 	posts = append(posts, newPostItem)
 	c.IndentedJSON(http.StatusCreated, newPostItem)
+}
+
+func connect() {
+	dbconf := "docker:docker@tcp(localhost:3306)/sampledb?charset=utf8"
+
+	db, err := sql.Open("mysql", dbconf)
+
+	// 接続が終了したらクローズする
+	defer db.Close()
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	err = db.Ping()
+
+	if err != nil {
+		fmt.Println("データベース接続失敗")
+		return
+	} else {
+		fmt.Println("データベース接続成功")
+	}
 }

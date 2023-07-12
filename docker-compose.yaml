@@ -36,6 +36,7 @@ services:
     build: ./go
     volumes:
       - ./go:/go
+    command: sh -c "go run main.go"
     container_name: go
     tty: true
     ports:
